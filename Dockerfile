@@ -27,4 +27,4 @@ COPY . /app
 
 EXPOSE 3000
 
-CMD poetry run gunicorn -b 0.0.0.0 -p $PORT src.main:application
+CMD poetry run python src/main.py
