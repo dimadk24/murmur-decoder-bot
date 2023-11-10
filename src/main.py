@@ -51,7 +51,9 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/Exceptions%2C-Warnings-and-Logging
 
 if __name__ == "__main__":
-    application = ApplicationBuilder().token(app_config.TELEGRAM_BOT_TOKEN).build()
+    application = (
+        ApplicationBuilder().token(app_config.TELEGRAM_BOT_TOKEN).build()
+    )
 
     start_handler = CommandHandler("start", start)
     application.add_handler(start_handler)
