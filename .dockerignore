@@ -1,0 +1,6 @@
+.env
+.env.local
+.env.sample
+
+**/*.pyc
+**/__pycache__/
