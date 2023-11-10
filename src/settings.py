@@ -5,6 +5,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from logtail import LogtailHandler
+import sentry_sdk
 
 
 class Settings(BaseSettings):
@@ -20,6 +21,7 @@ class Settings(BaseSettings):
     DOMAIN: str = Field()
     LOG_LEVEL: str = Field(default=logging.INFO)
     LOGTAIL_TOKEN: Optional[str] = Field()
+    SENTRY_DSN: Optional[str] = Field()
 
 
 app_config = Settings()
@@ -36,3 +38,9 @@ if not app_config.IS_LOCAL:
     handler = LogtailHandler(source_token=app_config.LOGTAIL_TOKEN)
     root_logger = logging.getLogger()
     root_logger.addHandler(handler)
+
+    sentry_sdk.init(
+        dsn=app_config.SENTRY_DSN,
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.1,
+    )
