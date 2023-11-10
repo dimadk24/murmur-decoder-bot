@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "murmur-decipher-bot"
+name = "murmur-decoder-bot"
 version = "0.1.0"
 description = "Telegram bot that transcribes voice messages in many languages using OpenAI Whisper API"
 authors = ["Dima Krutolianov <DimaKrutDK@ya.ru>"]
