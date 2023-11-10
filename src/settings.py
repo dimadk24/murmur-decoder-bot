@@ -32,6 +32,7 @@ logging.basicConfig(
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
-handler = LogtailHandler(source_token=app_config.LOGTAIL_TOKEN)
-root_logger = logging.getLogger()
-root_logger.addHandler(handler)
+if not app_config.IS_LOCAL:
+    handler = LogtailHandler(source_token=app_config.LOGTAIL_TOKEN)
+    root_logger = logging.getLogger()
+    root_logger.addHandler(handler)
