@@ -3,12 +3,6 @@ from pydantic import Field
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
-)
-logging.getLogger('httpx').setLevel(logging.WARNING)
-
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -21,6 +15,14 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str = Field()
     OPEN_AI_API_KEY: str = Field()
     DOMAIN: str = Field()
+    LOG_LEVEL: str = Field(default=logging.INFO)
 
 
 app_config = Settings()
+
+
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=app_config.LOG_LEVEL,
+)
+logging.getLogger("httpx").setLevel(logging.WARNING)
