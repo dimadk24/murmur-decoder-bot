@@ -1,7 +1,10 @@
 import logging
+from typing import Optional
 from pydantic import Field
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from logtail import LogtailHandler
 
 
 class Settings(BaseSettings):
@@ -16,6 +19,7 @@ class Settings(BaseSettings):
     OPEN_AI_API_KEY: str = Field()
     DOMAIN: str = Field()
     LOG_LEVEL: str = Field(default=logging.INFO)
+    LOGTAIL_TOKEN: Optional[str] = Field()
 
 
 app_config = Settings()
@@ -26,3 +30,8 @@ logging.basicConfig(
     level=app_config.LOG_LEVEL,
 )
 logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+handler = LogtailHandler(source_token=app_config.LOGTAIL_TOKEN)
+root_logger = logging.getLogger()
+root_logger.addHandler(handler)
