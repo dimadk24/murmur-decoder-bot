@@ -58,8 +58,9 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-# TODO:
-# https://github.com/python-telegram-bot/python-telegram-bot/wiki/Exceptions%2C-Warnings-and-Logging
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.exception("Exception was raised during update processing")
+
 
 if __name__ == "__main__":
     application = (
@@ -70,6 +71,7 @@ if __name__ == "__main__":
     application.add_handler(start_handler)
     message_handler = MessageHandler(None, message)
     application.add_handler(message_handler)
+    application.add_error_handler(error_handler)
 
     if app_config.IS_LOCAL:
         application.run_polling()
