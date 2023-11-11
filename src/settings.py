@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str = Field()
     OPEN_AI_API_KEY: str = Field()
     DOMAIN: str = Field()
-    LOG_LEVEL: str = Field(default=logging.INFO)
+    LOG_LEVEL: str | int = Field(default=logging.INFO)
     LOGTAIL_TOKEN: Optional[str] = Field()
     SENTRY_DSN: Optional[str] = Field()
 
@@ -40,7 +40,11 @@ if not app_config.IS_LOCAL:
     root_logger.addHandler(handler)
 
     def before_breadcrumb(crumb, hint):
-        if crumb["category"] == "httplib" and crumb["data"] and crumb["data"]["url"]:
+        if (
+            crumb["category"] == "httplib"
+            and crumb["data"]
+            and crumb["data"]["url"]
+        ):
             url: str = crumb["data"]["url"]
             crumb["data"]["url"] = url.replace(
                 app_config.TELEGRAM_BOT_TOKEN,
