@@ -4,9 +4,6 @@ from pydantic import Field
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from logtail import LogtailHandler
-import sentry_sdk
-
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -27,36 +24,3 @@ class Settings(BaseSettings):
 
 
 app_config = Settings()
-
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=app_config.LOG_LEVEL,
-)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-
-if app_config.USE_LOGGING_INTEGRATIONS:
-    handler = LogtailHandler(source_token=app_config.LOGTAIL_TOKEN)
-    root_logger = logging.getLogger()
-    root_logger.addHandler(handler)
-
-    def before_breadcrumb(crumb, hint):
-        if (
-            crumb["category"] == "httplib"
-            and crumb["data"]
-            and crumb["data"]["url"]
-        ):
-            url: str = crumb["data"]["url"]
-            crumb["data"]["url"] = url.replace(
-                app_config.TELEGRAM_BOT_TOKEN,
-                f"****{app_config.TELEGRAM_BOT_TOKEN[-4:]}",
-            )
-        return crumb
-
-    sentry_sdk.init(
-        dsn=app_config.SENTRY_DSN,
-        traces_sample_rate=0.1,
-        profiles_sample_rate=0.1,
-        before_breadcrumb=before_breadcrumb,
-    )

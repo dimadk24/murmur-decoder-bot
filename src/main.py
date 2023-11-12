@@ -12,6 +12,9 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
 )
+from logger import init_logging
+
+init_logging()
 
 logger = logging.getLogger("murmur-main")
 
