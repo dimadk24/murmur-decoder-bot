@@ -73,9 +73,7 @@ if __name__ == "__main__":
     application.add_handler(message_handler)
     application.add_error_handler(error_handler)
 
-    if app_config.IS_LOCAL:
-        application.run_polling()
-    else:
+    if app_config.USE_WEBHOOK:
         application.run_webhook(
             listen="0.0.0.0",
             port=3000,
@@ -83,3 +81,5 @@ if __name__ == "__main__":
             secret_token=app_config.SECRET_KEY,
             webhook_url=f"https://{app_config.DOMAIN}/webhook",
         )
+    else:
+        application.run_polling()
