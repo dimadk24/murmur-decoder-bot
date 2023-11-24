@@ -22,5 +22,7 @@ class Settings(BaseSettings):
     LOGTAIL_TOKEN: Optional[str] = Field()
     SENTRY_DSN: Optional[str] = Field()
 
+    PORT: Optional[str] = Field(default="8000")
+
 
 app_config = Settings()

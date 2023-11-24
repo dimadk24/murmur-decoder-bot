@@ -25,6 +25,8 @@ RUN poetry install --only=main --no-root --no-interaction --no-ansi
 
 COPY . /app
 
-EXPOSE 3000
+ENV PORT="8000"
+
+EXPOSE $PORT
 
 CMD poetry run python src/main.py

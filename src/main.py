@@ -79,7 +79,7 @@ if __name__ == "__main__":
     if app_config.USE_WEBHOOK:
         application.run_webhook(
             listen="0.0.0.0",
-            port=3000,
+            port=app_config.PORT,
             url_path="/webhook",
             secret_token=app_config.SECRET_KEY,
             webhook_url=f"https://{app_config.DOMAIN}/webhook",
