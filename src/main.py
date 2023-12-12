@@ -55,10 +55,6 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info("Processed a voice message")
     else:
         logger.debug("New text message")
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="I don't reply to texts, please send me a cute voice sample instead",
-        )
 
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
