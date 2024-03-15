@@ -1,5 +1,9 @@
-class RedactingFormatter(object):
-    def __init__(self, orig_formatter, patterns):
+from logging import Formatter
+
+
+class RedactingFormatter(Formatter):
+    def __init__(self, orig_formatter: Formatter, patterns: list[str]):
+        super().__init__()
         self.orig_formatter = orig_formatter
         self.patterns = patterns
 
