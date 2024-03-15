@@ -1,3 +1,5 @@
+import subprocess
+
 from settings import app_config
 
 from io import BytesIO
@@ -5,7 +7,7 @@ import openai
 from pathlib import Path
 import logging
 
-from telegram import Update
+from telegram import Update, File
 from telegram.ext import (
     ApplicationBuilder,
     ContextTypes,
@@ -20,6 +22,9 @@ logger = logging.getLogger("murmur-main")
 
 openai_client = openai.Client(api_key=app_config.OPEN_AI_API_KEY)
 
+tmp_dir = Path('.tmp').resolve()
+tmp_dir.mkdir(exist_ok=True)
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.debug("New start message")
@@ -27,6 +32,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id=update.effective_chat.id,
         text="Welcome! Send me your voice messages in any language",
     )
+
+
+async def download_tg_file(tg_file: File):
+    extension = Path(tg_file.file_path).suffix
+    download_path = tmp_dir / f"{tg_file.file_id}{extension}"
+
+    await tg_file.download_to_drive(download_path)
+    return download_path
 
 
 async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -53,8 +66,35 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_to_message_id=update.message.id,
         )
         logger.info("Processed a voice message")
+    elif update.message.video_note:
+        logger.debug("Processing a video note")
+
+        tg_file = await update.message.video_note.get_file()
+        video_path = await download_tg_file(tg_file)
+        audio_path = video_path.with_suffix('.wav')
+
+        subprocess.call([
+            'ffmpeg',
+            '-i', video_path,
+            audio_path,
+        ])
+
+        transcript = openai_client.audio.transcriptions.create(
+            model="whisper-1", file=audio_path
+        )
+        logger.debug("Transcribed a video note")
+
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=transcript.text,
+            reply_to_message_id=update.message.id,
+        )
+
+        video_path.unlink()
+        audio_path.unlink()
+        logger.info("Processed a video note")
     else:
-        logger.debug("New text message")
+        logger.debug("The message type is not supported")
 
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):

@@ -17,6 +17,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN python3 -m pip install --user pipx
 
+RUN apt-get -y update && \
+    apt-get install ffmpeg -y
+
 RUN pipx install poetry==$POETRY_VERSION
 
 WORKDIR /app
