@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     )
     USE_WEBHOOK: bool = Field()
     USE_LOGGING_INTEGRATIONS: bool = Field()
-    IS_LOCAL: bool = Field()
     # https://core.telegram.org/bots/api#:~:text=all%20pending%20updates-,secret_token,-String
     SECRET_KEY: str = Field(min_length=16, pattern=f"^[A-Za-z0-9_-]+$")
     TELEGRAM_BOT_TOKEN: str = Field()
