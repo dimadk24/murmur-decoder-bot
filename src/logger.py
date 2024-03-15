@@ -6,8 +6,8 @@ from settings import app_config
 from logging_mask_filter import RedactingFormatter
 
 
-def mask_bot_token(string: str):
-    string.replace(
+def mask_bot_token(string: str) -> str:
+    return string.replace(
         app_config.TELEGRAM_BOT_TOKEN,
         f"****{app_config.TELEGRAM_BOT_TOKEN[-2:]}",
     )
