@@ -1,15 +1,20 @@
-import logging
-from logtail import LogtailHandler
+import urllib.parse
+from logging.config import dictConfig
+import google.cloud.logging
+
 import sentry_sdk
 
 from settings import app_config
-from logging_mask_filter import RedactingFormatter
+from redacting_formatter import RedactingFormatter
 
 
 def mask_bot_token(string: str) -> str:
     return string.replace(
         app_config.TELEGRAM_BOT_TOKEN,
-        f"****{app_config.TELEGRAM_BOT_TOKEN[-2:]}",
+        "[--redacted--]"
+    ).replace(
+        urllib.parse.quote_plus(app_config.TELEGRAM_BOT_TOKEN),
+        "[--redacted--]"
     )
 
 
@@ -25,33 +30,71 @@ def before_sentry_breadcrumb(crumb, hint):
 
 
 def init_logging():
-    logging.basicConfig(
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        level=app_config.LOG_LEVEL,
-    )
+    google_logging_client = google.cloud.logging.Client()
+
+    logging_config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "loggers": {
+            "root": {
+                "level": "INFO",
+                "handlers":
+                    ["cloud_logging_handler",
+                     "consoleHandler"] if app_config.USE_LOGGING_INTEGRATIONS
+                    else ["consoleHandler"]
+            },
+            "murmur": {
+                "level": app_config.LOG_LEVEL,
+                "propagate": False,
+                "handlers":
+                    ["cloud_logging_handler",
+                     "consoleHandler"] if app_config.USE_LOGGING_INTEGRATIONS
+                    else ["consoleHandler"]
+            }
+        },
+        "handlers": {
+            "cloud_logging_handler": {
+                "class": google.cloud.logging.handlers.CloudLoggingHandler,
+                "client": google_logging_client,
+                "formatter": "gcloudFormatter",
+                "labels": {
+                    "service": "murmur-decoder-bot"
+                },
+            },
+            "consoleHandler": {
+                "class": "logging.StreamHandler",
+                "level": "DEBUG",
+                "formatter": "consoleFormatter",
+                "stream": "ext://sys.stdout",
+            },
+        },
+        "formatters": {
+            "consoleFormatter": {
+                "()": RedactingFormatter,
+                "patterns": [
+                    app_config.TELEGRAM_BOT_TOKEN,
+                    app_config.SECRET_KEY,
+                ],
+                "format": "[%(asctime)s] %(name)s - %(levelname)s: %(message)s",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+            },
+            "gcloudFormatter": {
+                "()": RedactingFormatter,
+                "patterns": [
+                    app_config.TELEGRAM_BOT_TOKEN,
+                    app_config.SECRET_KEY,
+                ],
+                "format": "%(name)s - %(levelname)s: %(message)s",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+            },
+        },
+    }
+    dictConfig(logging_config)
 
     if app_config.USE_LOGGING_INTEGRATIONS:
-        handler = LogtailHandler(source_token=app_config.LOGTAIL_TOKEN)
-        root_logger = logging.getLogger()
-        root_logger.addHandler(handler)
-
         sentry_sdk.init(
             dsn=app_config.SENTRY_DSN,
             traces_sample_rate=0.1,
             profiles_sample_rate=0.1,
             before_breadcrumb=before_sentry_breadcrumb,
-        )
-    else:
-        logging.getLogger("httpx").setLevel(logging.WARNING)
-        logging.getLogger("urllib3").setLevel(logging.WARNING)
-
-    for h in logging.root.handlers:
-        h.setFormatter(
-            RedactingFormatter(
-                h.formatter,
-                patterns=[
-                    app_config.TELEGRAM_BOT_TOKEN,
-                    app_config.SECRET_KEY,
-                ],
-            )
         )

@@ -18,7 +18,7 @@ from logger import init_logging
 
 init_logging()
 
-logger = logging.getLogger("murmur-main")
+logger = logging.getLogger("murmur.main")
 
 openai_client = openai.Client(api_key=app_config.OPEN_AI_API_KEY)
 

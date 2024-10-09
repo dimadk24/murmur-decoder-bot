@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Optional
 from pydantic import Field
 
@@ -18,10 +19,12 @@ class Settings(BaseSettings):
     OPEN_AI_API_KEY: str = Field()
     DOMAIN: str = Field()
     LOG_LEVEL: str | int = Field(default=logging.INFO)
-    LOGTAIL_TOKEN: Optional[str] = Field()
     SENTRY_DSN: Optional[str] = Field()
 
     PORT: Optional[str] = Field(default="8000")
 
 
 app_config = Settings()
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+    "google-application-credentials.json")

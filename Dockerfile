@@ -32,4 +32,4 @@ ENV PORT="8000"
 
 EXPOSE $PORT
 
-CMD poetry run python src/main.py
+CMD echo $GOOGLE_APPLICATION_CREDENTIALS_JSON | base64 --decode > /app/google-application-credentials.json && poetry run python src/main.py

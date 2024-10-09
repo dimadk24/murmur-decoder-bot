@@ -1,6 +1,9 @@
 .env
 .env.local
 .env.sample
+.env.keys
+.env.docker
 
 **/*.pyc
 **/__pycache__/
+google-application-credentials.json
